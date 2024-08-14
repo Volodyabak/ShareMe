@@ -23,7 +23,7 @@ definitions:
           - apt-get update && apt-get install -y sshpass rsync
           - npm install
           - npm run build
-          - sshpass -p $DO_SSH_PASSWORD rsync -avz -e "ssh -o StrictHostKeyChecking=no" --delete ./ $DO_SSH_USER@$DO_SERVER_IP:/home/nodejs/
+          - sshpass -p $DO_SSH_PASSWORD rsync -avz -e "ssh -o StrictHostKeyChecking=no" --delete ./ $DO_SSH_USER/home/nodejs/
           - sshpass -p $DO_SSH_PASSWORD ssh -o StrictHostKeyChecking=no $DO_SSH_USER@$DO_SERVER_IP "
               cd /home/$DO_SSH_USER &&
               npm install --production &&
