@@ -21,11 +21,12 @@ definitions:
         deployment: production
         script:
           - apt-get update && apt-get install -y sshpass
-          - sshpass -p $DO_SSH_PASSWORD ssh -o StrictHostKeyChecking=no $DO_SSH_USER@$DO_SERVER_IP "
-              cd /home/$DO_SSH_USER/projects/sharemy-backend &&
+          - sshpass -p $DO_SSH_PASSWORD ssh -o StrictHostKeyChecking=no nodejs@$DO_SERVER_IP "
+              cd /var/www/html &&
               git pull origin main &&
               npm install &&
-              npm run start:prod
+              npm run build &&
+              pm2 restart sharemy-backend
             "
 
 pipelines:
