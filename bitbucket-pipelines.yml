@@ -20,17 +20,15 @@ definitions:
         name: Deploy to DigitalOcean
         deployment: production
         script:
-          - pipe: atlassian/ssh-run:0.4.0
-            variables:
-              SSH_USER: $DO_SSH_USER
-              SERVER: $DO_SERVER_IP
-              SSH_KEY: $DO_SSH_PRIVATE_KEY
-              COMMAND: |
-                cd /home/nodejs
-                git pull origin main
-                npm install
-                # pm2 restart sharemy-backend
-                npm run start:prod
+          - apt-get update && apt-get install -y sshpass rsync
+          - npm install
+          - npm run build
+          - sshpass -p $DO_SSH_PASSWORD rsync -avz -e "ssh -o StrictHostKeyChecking=no" --delete ./ $DO_SSH_USER@$DO_SERVER_IP:/home/nodejs/
+          - sshpass -p $DO_SSH_PASSWORD ssh -o StrictHostKeyChecking=no $DO_SSH_USER@$DO_SERVER_IP "
+              cd /home/$DO_SSH_USER &&
+              npm install --production &&
+              pm2 restart sharemy-backend || pm2 start npm --name sharemy-backend -- start
+            "
 
 pipelines:
   default:
