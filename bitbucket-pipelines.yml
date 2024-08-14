@@ -20,15 +20,24 @@ definitions:
         name: Deploy to DigitalOcean
         deployment: production
         script:
-          - apt-get update && apt-get install -y sshpass rsync
+         - apt-get update && apt-get install -y sshpass rsync
           - npm install
           - npm run build
-          - sshpass -p $DO_SSH_PASSWORD rsync -avz -e "ssh -o StrictHostKeyChecking=no" --delete ./ $DO_SSH_USER/home/nodejs/
+          - echo "Current directory contents:"
+          - ls -la
+          - echo "Attempting to connect to server..."
+          - sshpass -p $DO_SSH_PASSWORD ssh -o StrictHostKeyChecking=no $DO_SSH_USER@$DO_SERVER_IP "echo 'Successfully connected'"
+          - echo "Transferring files..."
+          - sshpass -p $DO_SSH_PASSWORD rsync -avz -e "ssh -o StrictHostKeyChecking=no" --delete ./ $DO_SSH_USER@$DO_SERVER_IP:/home/nodejs/sharemy-backend/
+          - echo "File transfer complete. Verifying..."
           - sshpass -p $DO_SSH_PASSWORD ssh -o StrictHostKeyChecking=no $DO_SSH_USER@$DO_SERVER_IP "
-              cd /home/$DO_SSH_USER &&
+              echo 'Server directory contents:' &&
+              ls -la /home/nodejs/sharemy-backend/ &&
+              echo 'Deploying application...' &&
+              cd /home/nodejs/sharemy-backend &&
               npm install --production &&
-              # pm2 restart sharemy-backend || pm2 start npm --name sharemy-backend -- start
-              npm run start:prod
+              pm2 restart sharemy-backend || pm2 start npm --name sharemy-backend -- start &&
+              echo 'Deployment complete'
             "
 
 pipelines:
