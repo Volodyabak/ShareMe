@@ -1,70 +1,44 @@
 image: node:18
 
-pipelines:
-  default:
-    - step:
+definitions:
+  steps:
+    - step: &build-test
         name: Build and Test
         caches:
           - node
         script:
-          - npm ci
-          - npm run lint
-          - npm run build
+          - npm install
           - npm test
+    - step: &lint
+        name: Code linting
+        script:
+          - npm install eslint
+          - npx eslint .
+        caches:
+          - node
+    - step: &deploy
+        name: Deploy to DigitalOcean
+        deployment: production
+        script:
+          - pipe: atlassian/ssh-run:0.4.0
+            variables:
+              SSH_USER: dev@sharemyinc.com
+              SERVER: 134.122.19.233
+              COMMAND: |
+                cd /home/dev@sharemyinc.com/sharemy-backend
+                git pull origin main
+                npm install
+                # pm2 restart sharemy-backend
+                npm run start:prod
 
+pipelines:
+  default:
+    - parallel:
+        - step: *build-test
+        - step: *lint
   branches:
-    develop:
-      - step:
-          name: Build and Test
-          caches:
-            - node
-          script:
-            - npm ci
-            - npm run lint
-            - npm run build
-            - npm test
-      - step:
-          name: Deploy to Development
-          deployment: development
-          script:
-            - echo "Deploying to development environment"
-            # TODO: Add deployment script
-
-    staging:
-      - step:
-          name: Build and Test
-          caches:
-            - node
-          script:
-            - npm ci
-            - npm run lint
-            - npm run build
-            - npm test
-      - step:
-          name: Deploy to Staging
-          deployment: staging
-          script:
-            - echo "Deploying to staging environment"
-            # TODO: Add deployment script 
-
     main:
-      - step:
-          name: Build and Test
-          caches:
-            - node
-          script:
-            - npm ci
-            - npm run lint
-            - npm run build
-            - npm test
-      - step:
-          name: Manual Approval for Production
-          script:
-            - echo "Waiting for manual approval..."
-          trigger: manual
-      - step:
-          name: Deploy to Production
-          deployment: production
-          script:
-            - echo "Deploying to production environment"
-            # TODO: Add deployment script
+      - parallel:
+          - step: *build-test
+          - step: *lint
+      - step: *deploy
