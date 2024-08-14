@@ -27,8 +27,7 @@ definitions:
           - sshpass -p $DO_SSH_PASSWORD ssh -o StrictHostKeyChecking=no $DO_SSH_USER@$DO_SERVER_IP "
               cd /home/$DO_SSH_USER &&
               npm install --production &&
-              pm2 restart sharemy-backend || pm2 start npm --name sharemy-backend -- 
-              npm run start:prod
+              pm2 restart sharemy-backend || pm2 start npm --name sharemy-backend -- start
             "
 
 pipelines:
