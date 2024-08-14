@@ -9,6 +9,7 @@ definitions:
         script:
           - npm install
           - npm test
+
     - step: &lint
         name: Code linting
         script:
@@ -16,35 +17,26 @@ definitions:
           - npx eslint .
         caches:
           - node
+
     - step: &deploy
         name: Deploy to DigitalOcean
         deployment: production
         script:
-         - apt-get update && apt-get install -y sshpass rsync
+          - apt-get update && apt-get install -y sshpass rsync
           - npm install
           - npm run build
-          - echo "Current directory contents:"
-          - ls -la
-          - echo "Attempting to connect to server..."
-          - sshpass -p $DO_SSH_PASSWORD ssh -o StrictHostKeyChecking=no $DO_SSH_USER@$DO_SERVER_IP "echo 'Successfully connected'"
-          - echo "Transferring files..."
-          - sshpass -p $DO_SSH_PASSWORD rsync -avz -e "ssh -o StrictHostKeyChecking=no" --delete ./ $DO_SSH_USER@$DO_SERVER_IP:/home/nodejs/sharemy-backend/
-          - echo "File transfer complete. Verifying..."
+          - sshpass -p $DO_SSH_PASSWORD rsync -avz -e "ssh -o StrictHostKeyChecking=no" --delete ./ $DO_SSH_USER@$DO_SERVER_IP:/home/nodejs/
           - sshpass -p $DO_SSH_PASSWORD ssh -o StrictHostKeyChecking=no $DO_SSH_USER@$DO_SERVER_IP "
-              echo 'Server directory contents:' &&
-              ls -la /home/nodejs/sharemy-backend/ &&
-              echo 'Deploying application...' &&
-              cd /home/nodejs/sharemy-backend &&
+              cd /home/$DO_SSH_USER &&
               npm install --production &&
-              pm2 restart sharemy-backend || pm2 start npm --name sharemy-backend -- start &&
-              echo 'Deployment complete'
-            "
+              pm2 restart sharemy-backend || pm2 start npm --name sharemy-backend -- start"
 
 pipelines:
   default:
     - parallel:
         - step: *build-test
         - step: *lint
+
   branches:
     main:
       - parallel:
