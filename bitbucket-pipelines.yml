@@ -22,7 +22,7 @@ definitions:
         script:
           - apt-get update && apt-get install -y sshpass
           - sshpass -p $DO_SSH_PASSWORD ssh -o StrictHostKeyChecking=no nodejs@$DO_SERVER_IP "
-              cd http://@DO_SERVER_IP &&
+              cd /home/nodejs &&
               git pull origin main &&
               npm install &&
               npm run build &&
