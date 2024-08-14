@@ -22,10 +22,11 @@ definitions:
         script:
           - pipe: atlassian/ssh-run:0.4.0
             variables:
-              SSH_USER: dev@sharemyinc.com
-              SERVER: 134.122.19.233
+              SSH_USER: $DO_SSH_USER
+              SERVER: $DO_SERVER_IP
+              SSH_KEY: $DO_SSH_PRIVATE_KEY
               COMMAND: |
-                cd /home/dev@sharemyinc.com/sharemy-backend
+                cd /home/$DO_SSH_USER/projects/sharemy-backend
                 git pull origin main
                 npm install
                 # pm2 restart sharemy-backend
